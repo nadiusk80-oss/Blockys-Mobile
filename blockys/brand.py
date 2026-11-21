@@ -24,8 +24,8 @@ def patch(rel, pairs):
 
 patch("build.gradle", [
     ('applicationId "org.angelauramc.amethyst"', f'applicationId "{PKG}"'),
-    ("versionCode 10000000", "versionCode 20000002"),
-    ("versionName getVersionName()", 'versionName "2.0.2"'),
+    ("versionCode 10000000", "versionCode 20000003"),
+    ("versionName getVersionName()", 'versionName "2.0.3"'),
     ("            applicationIdSuffix '.debug'\n", ""),
     ('resValue "string", "app_name", "Amethyst (Debug)"',
      f'resValue "string", "app_name", "{NAME}"'),
@@ -90,37 +90,12 @@ patch("src/main/java/net/kdt/pojavlaunch/fragments/ProfileTypeSelectFragment.jav
 
 patch("src/main/java/net/kdt/pojavlaunch/fragments/LocalLoginFragment.java", [
     (
-        "import java.io.File;",
-        "import java.io.File;\nimport java.io.IOException;",
-    ),
-    (
-        "import net.kdt.pojavlaunch.Tools;",
-        "import net.kdt.pojavlaunch.PojavProfile;\n"
-        "import net.kdt.pojavlaunch.Tools;\n"
-        "import net.kdt.pojavlaunch.value.MinecraftAccount;",
-    ),
-    (
         "        // This is overkill but meh\n"
         "        if (!hasOnlineProfile()){\n"
         "            Tools.swapFragment(requireActivity(), MainMenuFragment.class, "
         "MainMenuFragment.TAG, null);\n"
         "        }\n",
         "",
-    ),
-    (
-        "            ExtraCore.setValue(ExtraConstants.MOJANG_LOGIN_TODO, "
-        "new String[]{\n"
-        "                    mUsernameEditText.getText().toString(), \"\" });",
-        "            MinecraftAccount account = new MinecraftAccount();\n"
-        "            account.username = mUsernameEditText.getText().toString();\n"
-        "            try {\n"
-        "                account.save();\n"
-        "            } catch (IOException e) {\n"
-        "                Tools.dialog(v.getContext(), "
-        "v.getContext().getString(R.string.global_error), String.valueOf(e));\n"
-        "                return;\n"
-        "            }\n"
-        "            PojavProfile.setCurrentProfile(v.getContext(), account.username);",
     ),
 ])
 

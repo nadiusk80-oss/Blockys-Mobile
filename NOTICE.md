@@ -30,9 +30,10 @@ on Boardwalk by Zhuowei Zhang.
   Forge, NeoForge, Quilt, OptiFine, modpack, LWJGL3ify and BTA profile creation is available
   without one.
 - `LocalLoginFragment` no longer bounces back to the main menu when there is no online
-  profile, and it writes the account file itself before returning, so the entry appears in
-  the account spinner right away (the upstream code relied on a listener owned by the
-  previous screen).
+  profile. Account creation uses PojavLauncher's original flow unchanged: the fragment sends
+  the new username through `ExtraCore` (`MOJANG_LOGIN_TODO`), the account spinner in
+  `LauncherActivity` saves it and adds it to its list, and the new account becomes the
+  selected profile immediately.
 - `MainMenuFragment` no longer gates the jar installer or the "open directory" button behind
   an online profile; `ModpackCreateFragment` no longer gates modpack creation either.
 - The demo profile restrictions are unchanged.

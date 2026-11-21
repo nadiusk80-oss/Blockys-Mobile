@@ -58,38 +58,41 @@ jobs:
         run: |
           set -eu
           apk=app_pojavlauncher/build/outputs/apk/debug/app_pojavlauncher-debug.apk
-          cp "$apk" Blockys-Mobile-2.0.2.apk
-          ls -l Blockys-Mobile-2.0.2.apk
+          cp "$apk" Blockys-Mobile-2.0.3.apk
+          ls -l Blockys-Mobile-2.0.3.apk
           aapt=$(ls "$ANDROID_HOME"/build-tools/*/aapt | sort -V | tail -1)
-          "$aapt" dump badging Blockys-Mobile-2.0.2.apk | head -3
-          echo "jre entries: $(unzip -l Blockys-Mobile-2.0.2.apk | grep -c 'assets/components/jre/')"
-          unzip -l Blockys-Mobile-2.0.2.apk | grep -E 'assets/components/jre/(universal|bin-arm64)\.tar\.xz'
+          "$aapt" dump badging Blockys-Mobile-2.0.3.apk | head -3
+          echo "jre entries: $(unzip -l Blockys-Mobile-2.0.3.apk | grep -c 'assets/components/jre/')"
+          unzip -l Blockys-Mobile-2.0.3.apk | grep -E 'assets/components/jre/(universal|bin-arm64)\.tar\.xz'
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: blockys-apk
-          path: Blockys-Mobile-2.0.2.apk
+          path: Blockys-Mobile-2.0.3.apk
 
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: blockys-mobile-v2.0.2
-          name: Blockys Mobile 2.0.2
+          tag_name: blockys-mobile-v2.0.3
+          name: Blockys Mobile 2.0.3
           make_latest: true
-          files: Blockys-Mobile-2.0.2.apk
+          files: Blockys-Mobile-2.0.3.apk
           body: |
-            ## Blockys Mobile 2.0.2
+            ## Blockys Mobile 2.0.3
 
-            - Local (offline) accounts now work without a Microsoft account: create one, and it is
-              selected and saved immediately. Fabric, Forge, NeoForge, Quilt, OptiFine and
-              modpack profiles, the jar installer and the game directory button no longer
-              require an online profile.
+            - Local (offline) accounts now use the original PojavLauncher flow: the account is
+              created, shown in the account selector and selected immediately, without a
+              Microsoft account.
+            - Fabric, Forge, NeoForge, Quilt, OptiFine and modpack profiles, the jar installer
+              and the game directory button no longer require an online profile.
             - Runs Minecraft versions up to 26.3 and 26.4-snapshot (Java 25).
             - Bundles Java 8; Java 17, 21 and 25 install from Settings > Java or download
               automatically when a version requires them.
             - Own package com.blockys.movil, Blockys name, icons and accent color.
             - APK signed with the project debug key; install with unknown sources enabled.
+              Uninstall any previous Blockys Mobile build first: each build uses a new debug
+              signature, so it cannot update an older one in place.
 
             Based on [Amethyst-Android](https://github.com/AngelAuraMC/Amethyst-Android) (LGPL-3.0),
             itself a fork of PojavLauncher. This fork is not affiliated with AngelAuraMC,
