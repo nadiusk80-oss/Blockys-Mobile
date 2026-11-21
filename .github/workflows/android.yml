@@ -58,32 +58,33 @@ jobs:
         run: |
           set -eu
           apk=app_pojavlauncher/build/outputs/apk/debug/app_pojavlauncher-debug.apk
-          cp "$apk" Blockys-Mobile-2.0.1.apk
-          ls -l Blockys-Mobile-2.0.1.apk
+          cp "$apk" Blockys-Mobile-2.0.2.apk
+          ls -l Blockys-Mobile-2.0.2.apk
           aapt=$(ls "$ANDROID_HOME"/build-tools/*/aapt | sort -V | tail -1)
-          "$aapt" dump badging Blockys-Mobile-2.0.1.apk | head -3
-          echo "jre entries: $(unzip -l Blockys-Mobile-2.0.1.apk | grep -c 'assets/components/jre/')"
-          unzip -l Blockys-Mobile-2.0.1.apk | grep -E 'assets/components/jre/(universal|bin-arm64)\.tar\.xz'
+          "$aapt" dump badging Blockys-Mobile-2.0.2.apk | head -3
+          echo "jre entries: $(unzip -l Blockys-Mobile-2.0.2.apk | grep -c 'assets/components/jre/')"
+          unzip -l Blockys-Mobile-2.0.2.apk | grep -E 'assets/components/jre/(universal|bin-arm64)\.tar\.xz'
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: blockys-apk
-          path: Blockys-Mobile-2.0.1.apk
+          path: Blockys-Mobile-2.0.2.apk
 
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: blockys-mobile-v2.0.1
-          name: Blockys Mobile 2.0.1
+          tag_name: blockys-mobile-v2.0.2
+          name: Blockys Mobile 2.0.2
           make_latest: true
-          files: Blockys-Mobile-2.0.1.apk
+          files: Blockys-Mobile-2.0.2.apk
           body: |
-            ## Blockys Mobile 2.0.1
+            ## Blockys Mobile 2.0.2
 
-            - Local (offline) accounts no longer require a Microsoft account. You can create and
-              use a local account, and create Fabric, Forge, NeoForge, Quilt, OptiFine and
-              modpack profiles, without owning Minecraft Java Edition.
+            - Local (offline) accounts now work without a Microsoft account: create one, and it is
+              selected and saved immediately. Fabric, Forge, NeoForge, Quilt, OptiFine and
+              modpack profiles, the jar installer and the game directory button no longer
+              require an online profile.
             - Runs Minecraft versions up to 26.3 and 26.4-snapshot (Java 25).
             - Bundles Java 8; Java 17, 21 and 25 install from Settings > Java or download
               automatically when a version requires them.

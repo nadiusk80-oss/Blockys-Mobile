@@ -29,8 +29,13 @@ on Boardwalk by Zhuowei Zhang.
   instead of checking for an online profile, and `ProfileTypeSelectFragment` so Fabric,
   Forge, NeoForge, Quilt, OptiFine, modpack, LWJGL3ify and BTA profile creation is available
   without one.
-- The remaining upstream online-profile checks (jar installer, "open directory" and demo
-  profile restrictions) are unchanged.
+- `LocalLoginFragment` no longer bounces back to the main menu when there is no online
+  profile, and it writes the account file itself before returning, so the entry appears in
+  the account spinner right away (the upstream code relied on a listener owned by the
+  previous screen).
+- `MainMenuFragment` no longer gates the jar installer or the "open directory" button behind
+  an online profile; `ModpackCreateFragment` no longer gates modpack creation either.
+- The demo profile restrictions are unchanged.
 
 The execution engine, runtime selection and native modules are unchanged.
 
