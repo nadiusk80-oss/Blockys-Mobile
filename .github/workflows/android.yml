@@ -1,4 +1,4 @@
-name: Blockys Móvil CI
+name: Blockys Mobile CI
 
 on:
   workflow_dispatch:
@@ -58,38 +58,37 @@ jobs:
         run: |
           set -eu
           apk=app_pojavlauncher/build/outputs/apk/debug/app_pojavlauncher-debug.apk
-          cp "$apk" Blockys-Movil-2.0.0.apk
-          ls -l Blockys-Movil-2.0.0.apk
+          cp "$apk" Blockys-Mobile-2.0.0.apk
+          ls -l Blockys-Mobile-2.0.0.apk
           aapt=$(ls "$ANDROID_HOME"/build-tools/*/aapt | sort -V | tail -1)
-          "$aapt" dump badging Blockys-Movil-2.0.0.apk | head -3
-          echo "jre entries: $(unzip -l Blockys-Movil-2.0.0.apk | grep -c 'assets/components/jre/')"
-          unzip -l Blockys-Movil-2.0.0.apk | grep -E 'assets/components/jre/(universal|bin-arm64)\.tar\.xz'
+          "$aapt" dump badging Blockys-Mobile-2.0.0.apk | head -3
+          echo "jre entries: $(unzip -l Blockys-Mobile-2.0.0.apk | grep -c 'assets/components/jre/')"
+          unzip -l Blockys-Mobile-2.0.0.apk | grep -E 'assets/components/jre/(universal|bin-arm64).tar.xz'
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: blockys-apk
-          path: Blockys-Movil-2.0.0.apk
+          path: Blockys-Mobile-2.0.0.apk
 
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: blockys-mobile-v2.0.0
-          name: Blockys Móvil 2.0.0
+          name: Blockys Mobile 2.0.0
           make_latest: true
-          files: Blockys-Movil-2.0.0.apk
+          files: Blockys-Mobile-2.0.0.apk
           body: |
-            ## Blockys Móvil 2.0.0
+            ## Blockys Mobile 2.0.0
 
-            Nueva base: [Amethyst-Android](https://github.com/AngelAuraMC/Amethyst-Android) (LGPL-3.0),
-            a su vez un fork de PojavLauncher.
+            New base: [Amethyst-Android](https://github.com/AngelAuraMC/Amethyst-Android) (LGPL-3.0),
+            itself a fork of PojavLauncher.
 
-            - Soporta Minecraft hasta 26.3 y 26.4-snapshot (Java 25).
-            - Incluye Java 8; Java 17, 21 y 25 se instalan desde Ajustes > Java o
-              automáticamente al iniciar una versión que las necesite.
-            - Paquete propio com.blockys.movil, nombre, iconos y color de Blockys.
-            - APK firmada con la clave de depuración del proyecto; instalar con
-              orígenes desconocidos habilitados.
+            - Runs Minecraft versions up to 26.3 and 26.4-snapshot (Java 25).
+            - Bundles Java 8; Java 17, 21 and 25 install from Settings > Java or download
+              automatically when a version requires them.
+            - Own package com.blockys.movil, Blockys name, icons and accent color.
+            - APK signed with the project debug key; install with unknown sources enabled.
 
-            Licencia LGPL-3.0. Este fork no está afiliado a AngelAuraMC, PojavLauncherTeam,
-            Mojang ni Microsoft. El código modificado está publicado en este repositorio.
+            Licensed under LGPL-3.0. This fork is not affiliated with AngelAuraMC, PojavlauncherTeam,
+            Mojang or Microsoft. Modified source is published in this repository.
