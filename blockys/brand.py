@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Rebrand an Amethyst-Android checkout as Blockys Movil (run from repo root copy)."""
+"""Rebrand an Amethyst-Android checkout as Blockys Mobile (run from repo root copy)."""
 from pathlib import Path
 
 from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parents[1]
 APP = ROOT / "app_pojavlauncher"
-NAME = "Blockys M\u00f3vil"
+NAME = "Blockys Mobile"
 PKG = "com.blockys.movil"
 ACCENT = "#3F6B32"
 BG = "#F4EFE2"
@@ -26,7 +26,8 @@ patch("build.gradle", [
     ('applicationId "org.angelauramc.amethyst"', f'applicationId "{PKG}"'),
     ("versionCode 10000000", "versionCode 20000000"),
     ("versionName getVersionName()", 'versionName "2.0.0"'),
-    ("            applicationIdSuffix '.debug'\n", ""),
+    ("            applicationIdSuffix '.debug'
+", ""),
     ('resValue "string", "app_name", "Amethyst (Debug)"',
      f'resValue "string", "app_name", "{NAME}"'),
     ('resValue "string", "app_short_name", "Amethyst (Debug)"',
@@ -96,13 +97,18 @@ src.resize((512, 512), Image.LANCZOS).save(res / "drawable" / "ic_pojav_full.web
 about = (APP / "src/main/assets/about_en.txt").read_text(encoding="utf-8")
 head, _, rest = about.partition("* Credits / Third party components")
 about = (
-    "%s (Minecraft: Java Edition launcher for Android), version %s \u2014 "
+    "%s (Minecraft: Java Edition launcher for Android), version %s — "
     f"{NAME}, a branded fork of Amethyst-Android (LGPL-3.0) by AngelAuraMC, itself based on "
-    "PojavLauncher and Boardwalk.<br>\n\n"
-    "* License:<br>\n"
-    " \u2022 This application is licensed under "
+    "PojavLauncher and Boardwalk.<br>
+
+"
+    "* License:<br>
+"
+    " • This application is licensed under "
     '<a href="https://github.com/nadiusk80-oss/Blockys-Movil/blob/v3_openjdk/LICENSE">'
-    "GNU Lesser General Public License v3.0</a>.<br>\n \n"
+    "GNU Lesser General Public License v3.0</a>.<br>
+ 
+"
     "* Credits / Third party components" + rest
 )
 (APP / "src/main/assets/about_en.txt").write_text(about, encoding="utf-8")
