@@ -24,8 +24,8 @@ def patch(rel, pairs):
 
 patch("build.gradle", [
     ('applicationId "org.angelauramc.amethyst"', f'applicationId "{PKG}"'),
-    ("versionCode 10000000", "versionCode 20000003"),
-    ("versionName getVersionName()", 'versionName "2.0.3"'),
+    ("versionCode 10000000", "versionCode 20000004"),
+    ("versionName getVersionName()", 'versionName "2.0.4"'),
     ("            applicationIdSuffix '.debug'\n", ""),
     ('resValue "string", "app_name", "Amethyst (Debug)"',
      f'resValue "string", "app_name", "{NAME}"'),
@@ -125,6 +125,13 @@ patch("src/main/java/net/kdt/pojavlaunch/fragments/MainMenuFragment.java", [
         "getCurrentProfileDirectory(), false);",
         "            } else openPath(v.getContext(), "
         "getCurrentProfileDirectory(), false);",
+    ),
+])
+
+patch("src/main/java/net/kdt/pojavlaunch/tasks/MinecraftDownloader.java", [
+    (
+        "                if(isLocalProfile || !isOnline) {",
+        "                if(!isOnline) {",
     ),
 ])
 

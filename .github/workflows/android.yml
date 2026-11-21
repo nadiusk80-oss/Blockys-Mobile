@@ -58,32 +58,35 @@ jobs:
         run: |
           set -eu
           apk=app_pojavlauncher/build/outputs/apk/debug/app_pojavlauncher-debug.apk
-          cp "$apk" Blockys-Mobile-2.0.3.apk
-          ls -l Blockys-Mobile-2.0.3.apk
+          cp "$apk" Blockys-Mobile-2.0.4.apk
+          ls -l Blockys-Mobile-2.0.4.apk
           aapt=$(ls "$ANDROID_HOME"/build-tools/*/aapt | sort -V | tail -1)
-          "$aapt" dump badging Blockys-Mobile-2.0.3.apk | head -3
-          echo "jre entries: $(unzip -l Blockys-Mobile-2.0.3.apk | grep -c 'assets/components/jre/')"
-          unzip -l Blockys-Mobile-2.0.3.apk | grep -E 'assets/components/jre/(universal|bin-arm64)\.tar\.xz'
+          "$aapt" dump badging Blockys-Mobile-2.0.4.apk | head -3
+          echo "jre entries: $(unzip -l Blockys-Mobile-2.0.4.apk | grep -c 'assets/components/jre/')"
+          unzip -l Blockys-Mobile-2.0.4.apk | grep -E 'assets/components/jre/(universal|bin-arm64)\.tar\.xz'
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: blockys-apk
-          path: Blockys-Mobile-2.0.3.apk
+          path: Blockys-Mobile-2.0.4.apk
 
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: blockys-mobile-v2.0.3
-          name: Blockys Mobile 2.0.3
+          tag_name: blockys-mobile-v2.0.4
+          name: Blockys Mobile 2.0.4
           make_latest: true
-          files: Blockys-Mobile-2.0.3.apk
+          files: Blockys-Mobile-2.0.4.apk
           body: |
-            ## Blockys Mobile 2.0.3
+            ## Blockys Mobile 2.0.4
 
             - Local (offline) accounts now use the original PojavLauncher flow: the account is
               created, shown in the account selector and selected immediately, without a
               Microsoft account.
+            - Minecraft versions now download and install with a local account, as in
+              PojavLauncher. The downloader no longer asks for a Microsoft profile when the
+              version is missing.
             - Fabric, Forge, NeoForge, Quilt, OptiFine and modpack profiles, the jar installer
               and the game directory button no longer require an online profile.
             - Runs Minecraft versions up to 26.3 and 26.4-snapshot (Java 25).

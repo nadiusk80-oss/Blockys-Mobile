@@ -36,6 +36,10 @@ on Boardwalk by Zhuowei Zhang.
   selected profile immediately.
 - `MainMenuFragment` no longer gates the jar installer or the "open directory" button behind
   an online profile; `ModpackCreateFragment` no longer gates modpack creation either.
+- `MinecraftDownloader.start` no longer refuses to download the game for local profiles.
+  Amethyst only verified that the version was already installed unless the current account
+  was a non-local, connected profile; upstream PojavLauncher calls `downloadGame`
+  unconditionally. The offline (no network) check and its message are kept.
 - The demo profile restrictions are unchanged.
 
 The execution engine, runtime selection and native modules are unchanged.
