@@ -1,41 +1,41 @@
-# NOTICE — Blockys Móvil
+# NOTICE — Blockys Mobile
 
-Blockys Móvil es un fork no oficial de
-[Amethyst-Android](https://github.com/AngelAuraMC/Amethyst-Android) (rama `v3_openjdk`),
-publicado por AngelAuraMC bajo la GNU Lesser General Public License v3.0 (LGPL-3.0).
+Blockys Mobile is an unofficial fork of
+[Amethyst-Android](https://github.com/AngelAuraMC/Amethyst-Android) (branch `v3_openjdk`),
+published by AngelAuraMC under the GNU Lesser General Public License v3.0 (LGPL-3.0).
 
-Amethyst-Android es, a su vez, un fork de
-[PojavLauncher](https://github.com/PojavLauncherTeam/PojavLauncher) (LGPL-3.0), basado
-originalmente en Boardwalk de Zhuowei Zhang.
+Amethyst-Android is itself a fork of
+[PojavLauncher](https://github.com/PojavLauncherTeam/PojavLauncher) (LGPL-3.0), originally based
+on Boardwalk by Zhuowei Zhang.
 
-## Modificaciones realizadas por este fork (2026-11-20)
+## Changes made by this fork (2026-11-20)
 
-- Rebranding aplicado en tiempo de compilación por `blockys/brand.py`:
-  - Nombre visible: `Blockys Móvil` (en lugar de `Amethyst`).
-  - Iconos de lanzador y de perfil por defecto regenerados a partir del arte de Blockys.
-  - Color de acento `minebutton_color` cambiado a `#3F6B32` y fondo de icono adaptativo
+- Rebranding applied at build time by `blockys/brand.py`:
+  - Visible name: `Blockys Mobile` (instead of `Amethyst`).
+  - Launcher and default profile icons regenerated from the Blockys artwork.
+  - `minebutton_color` accent changed to `#3F6B32` and adaptive icon background to
     `#F4EFE2`.
-  - Pantalla "Acerca de" (`about_en.txt`) con la atribución correspondiente.
-- Identificador de paquete propio: `com.blockys.movil` (sin sufijo `.debug`), para no
-  entrar en conflicto con PojavLauncher ni con Amethyst.
-- Workflow de compilación propio (`.github/workflows/android.yml`) que descarga el binpack
-  público de Java 8, aplica el branding, compila y publica la APK.
-- README y este NOTICE reescritos.
+  - "About" screen (`about_en.txt`) with the corresponding attribution.
+- Own package identifier: `com.blockys.movil` (no `.debug` suffix), so it does not conflict
+  with PojavLauncher or Amethyst.
+- Own build workflow (`.github/workflows/android.yml`) that downloads the public Java 8
+  binpack, applies branding, builds and publishes the APK.
+- README and this NOTICE rewritten.
 
-No se han modificado el motor de ejecución, la selección de runtimes ni los módulos nativos.
+The execution engine, runtime selection and native modules are unchanged.
 
-## Código fuente y licencia
+## Source code and license
 
-- Este repositorio contiene el código fuente completo del fork, incluido el binario de
-  branding (`blockys/icon.png`) y el script `blockys/brand.py`.
-- Licencia: LGPL-3.0 (ver `LICENSE`). Los términos de la LGPL-3.0 se aplican a este trabajo
-  derivado igual que al proyecto original.
-- Java Runtime incluido: OpenJDK 8, construido por AngelAuraMC para Android, bajo GPLv2 con
-  Classpath Exception. Los JRE de Java 17/21/25 se descargan desde
+- This repository contains the full fork source, including the branding binary
+  (`blockys/icon.png`) and the `blockys/brand.py` script.
+- License: LGPL-3.0 (see `LICENSE`). The LGPL-3.0 terms apply to this derivative work the same
+  as they do to the original project.
+- Bundled Java Runtime: OpenJDK 8, built by AngelAuraMC for Android, under GPLv2 with
+  Classpath Exception. The Java 17/21/25 JREs download from
   `AngelAuraMC/angelauramc-openjdk-build`.
 
-## No afiliación
+## Non-affiliation
 
-Blockys Móvil no está afiliado a AngelAuraMC, PojavLauncherTeam, Mojang Studios ni Microsoft,
-y no está aprobado ni patrocinado por ellos. "Minecraft" es una marca registrada de Mojang
-Studios.
+Blockys Mobile is not affiliated with AngelAuraMC, PojavLauncherTeam, Mojang Studios or
+Microsoft, and is not endorsed or sponsored by them. "Minecraft" is a registered trademark of
+Mojang Studios.

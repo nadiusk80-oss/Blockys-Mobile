@@ -1,49 +1,49 @@
-# Blockys Móvil
+# Blockys Mobile
 
-Launcher de Minecraft: Java Edition para Android, con la identidad visual de Blockys.
+Minecraft: Java Edition launcher for Android, with the Blockys visual identity.
 
-Blockys Móvil es un fork no oficial de [Amethyst-Android](https://github.com/AngelAuraMC/Amethyst-Android)
-(LGPL-3.0), que a su vez es un fork de
-[PojavLauncher](https://github.com/PojavLauncherTeam/PojavLauncher) y de Boardwalk.
+Blockys Mobile is an unofficial fork of [Amethyst-Android](https://github.com/AngelAuraMC/Amethyst-Android)
+(LGPL-3.0), which is itself a fork of
+[PojavLauncher](https://github.com/PojavLauncherTeam/PojavLauncher) and Boardwalk.
 
-## Descarga
+## Download
 
-APK: sección **Releases** de este repositorio (`Blockys-Movil-<versión>.apk`).
+APK: the **Releases** section of this repository (`Blockys-Mobile-<version>.apk`).
 
-La APK está firmada con la clave de depuración del proyecto, así que hay que permitir la
-instalación desde orígenes desconocidos. El paquete es `com.blockys.movil`, distinto del de
-PojavLauncher y del de Amethyst, por lo que puede convivir con ellos.
+The APK is signed with the project debug key, so you need to allow installation from unknown
+sources. The package is `com.blockys.movil`, different from PojavLauncher and Amethyst, so it can
+run alongside them.
 
 ## Java
 
-- **Java 8** viene incluido dentro de la APK.
-- **Java 17, 21 y 25** se instalan desde *Ajustes > Java* (gestor de runtimes), o se descargan
-  automáticamente al iniciar una versión de Minecraft que las necesite.
-- Minecraft **26.3** y **26.4-snapshot** requieren Java 25; el launcher detecta la versión
-  requerida por el JSON del juego y descarga el JRE correspondiente desde
+- **Java 8** is bundled inside the APK.
+- **Java 17, 21 and 25** install from *Settings > Java* (runtime manager), or download
+  automatically when launching a Minecraft version that requires them.
+- Minecraft **26.3** and **26.4-snapshot** require Java 25; the launcher reads the version
+  required by the game JSON and downloads the matching JRE from
   [angelauramc-openjdk-build](https://github.com/AngelAuraMC/angelauramc-openjdk-build).
 
-## Qué cambia respecto a Amethyst
+## What changes compared to Amethyst
 
-Solo el branding y el empaquetado; el motor del juego es el de Amethyst:
+Only branding and packaging; the game engine is Amethyst's:
 
-- Nombre e iconos de Blockys, color de acento `#3F6B32` y fondo de icono `#F4EFE2`.
-- `applicationId` propio: `com.blockys.movil`.
-- Workflow de compilación propio (`.github/workflows/android.yml` + `blockys/brand.py`).
-- README/NOTICE y pantalla "Acerca de" con la atribución correspondiente.
+- Blockys name and icons, accent color `#3F6B32` and icon background `#F4EFE2`.
+- Own `applicationId`: `com.blockys.movil`.
+- Own build workflow (`.github/workflows/android.yml` + `blockys/brand.py`).
+- README/NOTICE and the "About" screen carry the corresponding attribution.
 
-No hay cambios en el código del launcher ni en la selección de runtimes, más allá del branding.
+There are no changes to launcher code or runtime selection beyond branding.
 
-## Compilar
+## Building
 
-El workflow `Blockys Móvil CI` compila en GitHub Actions:
+The `Blockys Mobile CI` workflow builds on GitHub Actions:
 
-1. Descarga el binpack de Java 8 (artefacto público de `angelauramc-openjdk-build`).
-2. Aplica `blockys/brand.py` (Gradle, strings, colores, iconos).
-3. Ejecuta `gradle :app_pojavlauncher:assembleDebug`.
-4. Verifica la APK y publica el release.
+1. Downloads the Java 8 binpack (public artifact from `angelauramc-openjdk-build`).
+2. Applies `blockys/brand.py` (Gradle, strings, colors, icons).
+3. Runs `gradle :app_pojavlauncher:assembleDebug`.
+4. Verifies the APK and publishes the release.
 
-Localmente, con JDK 21, NDK 27.3.13750724 y los submódulos clonados:
+Locally, with JDK 21, NDK 27.3.13750724 and cloned submodules:
 
 ```
 git clone --recursive -b v3_openjdk https://github.com/nadiusk80-oss/Blockys-Movil
@@ -51,16 +51,15 @@ python3 blockys/brand.py
 gradle :app_pojavlauncher:assembleDebug
 ```
 
-## Licencia y atribución
+## License and attribution
 
-Blockys Móvil se distribuye bajo **GNU Lesser General Public License v3.0**, igual que
-Amethyst-Android y PojavLauncher. El código fuente modificado está en este repositorio.
+Blockys Mobile is distributed under the **GNU Lesser General Public License v3.0**, the same as
+Amethyst-Android and PojavLauncher. The modified source code is in this repository.
 
-Este proyecto **no está afiliado** a AngelAuraMC, PojavLauncherTeam, Mojang Studios ni
-Microsoft, y no está aprobado ni patrocinado por ellos. Minecraft es una marca de Mojang
-Studios.
+This project is **not affiliated** with AngelAuraMC, PojavLauncherTeam, Mojang Studios or
+Microsoft, and is not endorsed or sponsored by them. Minecraft is a trademark of Mojang Studios.
 
-## Proyecto de escritorio
+## Desktop project
 
-El launcher para Windows de Blockys está en
+The Blockys launcher for Windows is at
 [Blockys-Launcher](https://github.com/nadiusk80-oss/Blockys-Launcher).
