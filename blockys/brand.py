@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""""""""Rebrand an Amethyst-Android checkout as Blockys Mobile (run from repo root copy)."""""""""
+"""Rebrand an Amethyst-Android checkout as Blockys Mobile (run from repo root copy)."""
 from pathlib import Path
 
 from PIL import Image, ImageDraw
