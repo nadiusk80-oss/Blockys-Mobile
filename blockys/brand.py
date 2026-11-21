@@ -24,8 +24,8 @@ def patch(rel, pairs):
 
 patch("build.gradle", [
     ('applicationId "org.angelauramc.amethyst"', f'applicationId "{PKG}"'),
-    ("versionCode 10000000", "versionCode 20000000"),
-    ("versionName getVersionName()", 'versionName "2.0.0"'),
+    ("versionCode 10000000", "versionCode 20000001"),
+    ("versionName getVersionName()", 'versionName "2.0.1"'),
     ("            applicationIdSuffix '.debug'\n", ""),
     ('resValue "string", "app_name", "Amethyst (Debug)"',
      f'resValue "string", "app_name", "{NAME}"'),
@@ -61,6 +61,31 @@ patch("src/main/res/values/strings.xml", [
 patch("src/main/res/values/colors.xml", [
     ('<color name="minebutton_color">#9649b8</color>',
      f'<color name="minebutton_color">{ACCENT}</color>'),
+])
+
+patch("src/main/java/net/kdt/pojavlaunch/fragments/SelectAuthFragment.java", [
+    (
+        "mLocalButton.setOnClickListener(v -> hasNoOnlineProfileDialog(requireActivity(), "
+        "() -> Tools.swapFragment(requireActivity(), LocalLoginFragment.class, "
+        "LocalLoginFragment.TAG, null)));",
+        "mLocalButton.setOnClickListener(v -> Tools.swapFragment(requireActivity(), "
+        "LocalLoginFragment.class, LocalLoginFragment.TAG, null));",
+    ),
+])
+
+patch("src/main/java/net/kdt/pojavlaunch/fragments/ProfileTypeSelectFragment.java", [
+    (
+        "private void tryInstall(Class<? extends Fragment> fragmentClass, String tag){\n"
+        "        if(!hasOnlineProfile()){\n"
+        "            hasNoOnlineProfileDialog(requireActivity());\n"
+        "        } else {\n"
+        "            Tools.swapFragment(requireActivity(), fragmentClass, tag, null);\n"
+        "        }\n"
+        "    }",
+        "private void tryInstall(Class<? extends Fragment> fragmentClass, String tag){\n"
+        "        Tools.swapFragment(requireActivity(), fragmentClass, tag, null);\n"
+        "    }",
+    ),
 ])
 
 src = Image.open(ROOT / "blockys" / "icon.png").convert("RGBA")

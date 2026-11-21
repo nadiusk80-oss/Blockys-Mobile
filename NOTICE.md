@@ -22,6 +22,16 @@ on Boardwalk by Zhuowei Zhang.
   binpack, applies branding, builds and publishes the APK.
 - README and this NOTICE rewritten.
 
+## Changes made by this fork (2026-11-21)
+
+- Local (offline) accounts no longer require a Microsoft account. `brand.py` rewrites
+  `SelectAuthFragment` so the "Local account" button opens the local login screen directly
+  instead of checking for an online profile, and `ProfileTypeSelectFragment` so Fabric,
+  Forge, NeoForge, Quilt, OptiFine, modpack, LWJGL3ify and BTA profile creation is available
+  without one.
+- The remaining upstream online-profile checks (jar installer, "open directory" and demo
+  profile restrictions) are unchanged.
+
 The execution engine, runtime selection and native modules are unchanged.
 
 ## Source code and license
