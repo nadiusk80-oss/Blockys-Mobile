@@ -24,8 +24,8 @@ def patch(rel, pairs):
 
 patch("build.gradle", [
     ('applicationId "org.angelauramc.amethyst"', f'applicationId "{PKG}"'),
-    ("versionCode 10000000", "versionCode 20000004"),
-    ("versionName getVersionName()", 'versionName "2.0.4"'),
+    ("versionCode 10000000", "versionCode 20000005"),
+    ("versionName getVersionName()", 'versionName "2.0.5"'),
     ("            applicationIdSuffix '.debug'\n", ""),
     ('resValue "string", "app_name", "Amethyst (Debug)"',
      f'resValue "string", "app_name", "{NAME}"'),
@@ -132,6 +132,22 @@ patch("src/main/java/net/kdt/pojavlaunch/tasks/MinecraftDownloader.java", [
     (
         "                if(isLocalProfile || !isOnline) {",
         "                if(!isOnline) {",
+    ),
+])
+
+patch("src/main/java/net/kdt/pojavlaunch/MainActivity.java", [
+    (
+        "            JMinecraftVersionList.Version mVersionInfo = Tools.getVersionInfo(version);\n",
+        "            JMinecraftVersionList.Version mVersionInfo = Tools.getVersionInfo(version);\n"
+        "            // Minecraft 26.3+ needs the Vulkan-backed renderer; the OpenGL\n"
+        "            // fallback aborts on Android because SDL allows a single window.\n"
+        "            if (mVersionInfo.javaVersion != null\n"
+        "                    && mVersionInfo.javaVersion.majorVersion >= 25\n"
+        "                    && (Tools.LOCAL_RENDERER == null\n"
+        "                        || !Tools.LOCAL_RENDERER.toLowerCase().contains(\"zink\"))) {\n"
+        "                Log.i(\"RdrDebug\", \"Java 25+ version: switching renderer to Kopper Zink\");\n"
+        "                Tools.LOCAL_RENDERER = \"opengles3_desktopgl_zink_kopper\";\n"
+        "            }\n",
     ),
 ])
 
