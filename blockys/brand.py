@@ -24,8 +24,8 @@ def patch(rel, pairs):
 
 patch("build.gradle", [
     ('applicationId "org.angelauramc.amethyst"', f'applicationId "{PKG}"'),
-    ("versionCode 10000000", "versionCode 20000005"),
-    ("versionName getVersionName()", 'versionName "2.0.5"'),
+    ("versionCode 10000000", "versionCode 20000006"),
+    ("versionName getVersionName()", 'versionName "2.0.6"'),
     ("            applicationIdSuffix '.debug'\n", ""),
     ('resValue "string", "app_name", "Amethyst (Debug)"',
      f'resValue "string", "app_name", "{NAME}"'),
@@ -148,6 +148,13 @@ patch("src/main/java/net/kdt/pojavlaunch/MainActivity.java", [
         "                Log.i(\"RdrDebug\", \"Java 25+ version: switching renderer to Kopper Zink\");\n"
         "                Tools.LOCAL_RENDERER = \"opengles3_desktopgl_zink_kopper\";\n"
         "            }\n",
+    ),
+])
+
+patch("src/main/java/net/kdt/pojavlaunch/MinecraftGLSurface.java", [
+    (
+        'MCOptionUtils.set("fullscreen", "off");',
+        'MCOptionUtils.set("fullscreen", "false");',
     ),
 ])
 
