@@ -9,7 +9,10 @@
 #include <dlfcn.h>
 #include <jni.h>
 #include <stdlib.h>
+#include <string.h>
 #include <pthread.h>
+
+#include "../ctxbridges/loader_dlopen.h"
 
 DECL_DLSYM(SDL_InitSubSystem)
 DECL_DLSYM(SDL_OpenGamepad)
@@ -20,6 +23,9 @@ DECL_DLSYM(SDL_SetHint);
 DECL_DLSYM(SDL_SetTextInputArea);
 DECL_DLSYM(SDL_SetError);
 DECL_DLSYM(SDL_GetError);
+DECL_DLSYM(SDL_LoadObject)
+DECL_DLSYM(SDL_CreateWindow)
+DECL_DLSYM(SDL_DestroyWindow)
 
 
 static bool custom_SDL_InitSubSystem_Func(SDL_InitFlags flags) {
@@ -378,6 +384,129 @@ custom_SDL_CloseGamepad_Func(SDL_Gamepad *gamepad)
     );
 }
 
+/*
+ * The launcher's EGL (zink/Mesa) lives in the APK lib dir and SDL loads it with
+ * a plain dlopen(), which some Android builds refuse (namespace restrictions or
+ * RTLD_NOW on symbols the system private libs don't expose). Retry through the
+ * launcher loader, which falls back to a namespace-bypass dlopen.
+ */
+static SDL_SharedObject *
+custom_SDL_LoadObject_Func(const char *sofile)
+{
+    SDL_SharedObject *result = BYTEHOOK_CALL_PREV(
+            custom_SDL_LoadObject_Func,
+            SDL_LoadObject_t,
+            sofile
+    );
+
+    BYTEHOOK_POP_STACK();
+
+    if (result != NULL || sofile == NULL)
+        return result;
+
+    const char *renderer_egl = getenv("POJAVEXEC_EGL");
+    if (renderer_egl == NULL || renderer_egl[0] == '\0')
+        return NULL;
+
+    const char *base = strrchr(sofile, '/');
+    base = base ? base + 1 : sofile;
+    if (strcmp(base, renderer_egl) != 0)
+        return NULL;
+
+    LOGI("SDL_LoadObject: plain dlopen of %s failed, retrying through loader_dlopen", sofile);
+    void *handle = loader_dlopen((char *)sofile, (char *)base, RTLD_LOCAL | RTLD_LAZY);
+    if (handle == NULL) {
+        LOGI("SDL_LoadObject: loader_dlopen also failed for %s", sofile);
+        return NULL;
+    }
+    LOGI("SDL_LoadObject: loaded %s through loader_dlopen", sofile);
+    return (SDL_SharedObject *)handle;
+}
+
+/*
+ * SDL's Android driver only allows one window per process. Minecraft 26.x's
+ * OpenGL backend (renderpearl GlDevice) opens extra hidden helper windows, so
+ * its second SDL_CreateWindow always fails there. Hand out the existing window
+ * instead and keep it alive until every alias has been destroyed.
+ */
+static pthread_mutex_t g_sdl_window_mutex = PTHREAD_MUTEX_INITIALIZER;
+static SDL_Window *g_sdl_shared_window = NULL;
+static int g_sdl_shared_window_refs = 0;
+
+static SDL_Window *
+custom_SDL_CreateWindow_Func(const char *title, int w, int h, SDL_WindowFlags flags)
+{
+    SDL_Window *result = BYTEHOOK_CALL_PREV(
+            custom_SDL_CreateWindow_Func,
+            SDL_CreateWindow_t,
+            title,
+            w,
+            h,
+            flags
+    );
+
+    BYTEHOOK_POP_STACK();
+
+    if (result != NULL) {
+        pthread_mutex_lock(&g_sdl_window_mutex);
+        if (g_sdl_shared_window == NULL) {
+            g_sdl_shared_window = result;
+            g_sdl_shared_window_refs = 1;
+        }
+        pthread_mutex_unlock(&g_sdl_window_mutex);
+        return result;
+    }
+
+    SET_DLSYM_PTR(dlopen("libSDL3.so", RTLD_NOLOAD), SDL_GetError);
+    const char *error = SDL_GetError_p ? SDL_GetError_p() : NULL;
+    if (error == NULL || strstr(error, "only supports one window") == NULL)
+        return NULL;
+
+    pthread_mutex_lock(&g_sdl_window_mutex);
+    if (g_sdl_shared_window == NULL) {
+        pthread_mutex_unlock(&g_sdl_window_mutex);
+        return NULL;
+    }
+    g_sdl_shared_window_refs++;
+    SDL_Window *shared = g_sdl_shared_window;
+    pthread_mutex_unlock(&g_sdl_window_mutex);
+
+    LOGI("SDL_CreateWindow: Android only supports one window, reusing %p for \"%s\"",
+            shared, title ? title : "");
+    return shared;
+}
+
+static void
+custom_SDL_DestroyWindow_Func(SDL_Window *window)
+{
+    int destroy = 1;
+
+    pthread_mutex_lock(&g_sdl_window_mutex);
+    if (window != NULL && window == g_sdl_shared_window) {
+        if (g_sdl_shared_window_refs > 1) {
+            g_sdl_shared_window_refs--;
+            destroy = 0;
+        } else {
+            g_sdl_shared_window = NULL;
+            g_sdl_shared_window_refs = 0;
+        }
+    }
+    pthread_mutex_unlock(&g_sdl_window_mutex);
+
+    if (!destroy) {
+        LOGI("SDL_DestroyWindow: keeping shared window %p alive for the remaining aliases", window);
+        return;
+    }
+
+    BYTEHOOK_CALL_PREV(
+            custom_SDL_DestroyWindow_Func,
+            SDL_DestroyWindow_t,
+            window
+    );
+
+    BYTEHOOK_POP_STACK();
+}
+
 void create_sdl_hooks(bytehook_hook_all_t bytehook_hook_all_p) {
     // Don't set callee_path_name to anything besides NULL or else it won't be able to find the symbol
     bytehook_stub_t stub_SDL_InitSubSystem = bytehook_hook_all_p(NULL, "SDL_InitSubSystem", &custom_SDL_InitSubSystem_Func, NULL, NULL);
@@ -385,5 +514,8 @@ void create_sdl_hooks(bytehook_hook_all_t bytehook_hook_all_p) {
     bytehook_stub_t stub_SDL_OpenGamepad  = bytehook_hook_all_p(NULL, "SDL_OpenGamepad",  &custom_SDL_OpenGamepad_Func,  NULL, NULL);
     bytehook_stub_t stub_SDL_CloseJoystick = bytehook_hook_all_p(NULL, "SDL_CloseJoystick", &custom_SDL_CloseJoystick_Func, NULL, NULL);
     bytehook_stub_t stub_SDL_CloseGamepad  = bytehook_hook_all_p(NULL, "SDL_CloseGamepad",  &custom_SDL_CloseGamepad_Func,  NULL, NULL);
+    bytehook_stub_t stub_SDL_LoadObject = bytehook_hook_all_p(NULL, "SDL_LoadObject", &custom_SDL_LoadObject_Func, NULL, NULL);
+    bytehook_stub_t stub_SDL_CreateWindow = bytehook_hook_all_p(NULL, "SDL_CreateWindow", &custom_SDL_CreateWindow_Func, NULL, NULL);
+    bytehook_stub_t stub_SDL_DestroyWindow = bytehook_hook_all_p(NULL, "SDL_DestroyWindow", &custom_SDL_DestroyWindow_Func, NULL, NULL);
     LOGI("Successfully initialized SDL hook, stub: %p\n", stub_SDL_InitSubSystem);
 }
