@@ -24,8 +24,8 @@ def patch(rel, pairs):
 
 patch("build.gradle", [
     ('applicationId "org.angelauramc.amethyst"', f'applicationId "{PKG}"'),
-    ("versionCode 10000000", "versionCode 20000006"),
-    ("versionName getVersionName()", 'versionName "2.0.6"'),
+    ("versionCode 10000000", "versionCode 20000007"),
+    ("versionName getVersionName()", 'versionName "2.0.7"'),
     ("            applicationIdSuffix '.debug'\n", ""),
     ('resValue "string", "app_name", "Amethyst (Debug)"',
      f'resValue "string", "app_name", "{NAME}"'),
