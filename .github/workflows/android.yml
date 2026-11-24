@@ -2,9 +2,123 @@ name: Blockys Mobile CI
 
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/android.yml'
+      - 'blockys/**'
+
+permissions:
+  contents: write
 
 jobs:
-  gated:
+  build:
     runs-on: ubuntu-22.04
     steps:
-      - run: echo gated
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Get JRE 8 binpack
+        uses: dawidd6/action-download-artifact@v9
+        with:
+          workflow: build.yml
+          path: app_pojavlauncher/src/main/assets/components/jre
+          workflow_conclusion: completed
+          repo: AngelAuraMC/angelauramc-openjdk-build
+          branch: buildjre8
+          name: jre8-pojav
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          validate-wrappers: false
+          gradle-version: '9.6.1'
+
+      - name: Apply Blockys branding
+        run: |
+          python3 -m pip install --quiet pillow
+          python3 blockys/brand.py
+
+      - name: Prepare resources
+        run: |
+          chmod +x scripts/*.sh gradlew
+          ./scripts/languagelist_updater.sh
+
+      - name: Build debug APK
+        run: gradle :app_pojavlauncher:assembleDebug --no-daemon
+
+      - name: Verify APK
+        run: |
+          set -eu
+          apk=app_pojavlauncher/build/outputs/apk/debug/app_pojavlauncher-debug.apk
+          cp "$apk" Blockys-Mobile-2.0.7.apk
+          ls -l Blockys-Mobile-2.0.7.apk
+          aapt=$(ls "$ANDROID_HOME"/build-tools/*/aapt | sort -V | tail -1)
+          "$aapt" dump badging Blockys-Mobile-2.0.7.apk | head -3
+          echo "jre entries: $(unzip -l Blockys-Mobile-2.0.7.apk | grep -c 'assets/components/jre/')"
+          unzip -l Blockys-Mobile-2.0.7.apk | grep -E 'assets/components/jre/(universal|bin-arm64)\.tar\.xz'
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: blockys-apk
+          path: Blockys-Mobile-2.0.7.apk
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: blockys-mobile-v2.0.7
+          name: Blockys Mobile 2.0.7
+          make_latest: true
+          files: Blockys-Mobile-2.0.7.apk
+          body: |
+            ## Blockys Mobile 2.0.7
+
+            - Fixes the "game exited with code 6" (SIGABRT) crash on Minecraft 26.x for
+              devices whose Vulkan driver lacks the features the new backend demands (for
+              example Mali-G57: vertex attribute divisor, multiDrawIndirect,
+              VK_EXT_vertex_attribute_divisor). RenderPearl still refuses those drivers in
+              Vulkan mode, so the launcher repairs its OpenGL fallback instead:
+              - SDL loads the EGL library with a plain dlopen, which Android can refuse for
+                the bundled Mesa/zink libraries. When that load fails, the launcher retries
+                it through its own loader with namespace fallback.
+              - SDL's Android driver accepts one window per process, and Minecraft 26.x
+                opens a hidden helper window right after the first one, so the OpenGL
+                backend always aborted with "Android only supports one window". Extra
+                windows now reuse the existing one.
+            - The OpenGL path above is experimental: it depends on zink exposing a complete
+              desktop GL 4.x feature set over the device's Vulkan driver. If the game still
+              closes with code 6, share the launcher log; it now records each EGL load and
+              window step.
+            - Fix: the launcher wrote `fullscreen:off` into `options.txt`. Minecraft 26.x
+              only accepts booleans there and logged "Error parsing option value off for
+              option Fullscreen: Not a boolean" on every start. It now writes
+              `fullscreen:false`, which every supported version accepts.
+            - Profiles that need Java 25 keep launching with the Vulkan-backed Kopper Zink
+              renderer automatically.
+            - Local (offline) accounts now use the original PojavLauncher flow: the account is
+              created, shown in the account selector and selected immediately, without a
+              Microsoft account.
+            - Minecraft versions now download and install with a local account, as in
+              PojavLauncher. The downloader no longer asks for a Microsoft profile when the
+              version is missing.
+            - Fabric, Forge, NeoForge, Quilt, OptiFine and modpack profiles, the jar installer
+              and the game directory button no longer require an online profile.
+            - Runs Minecraft versions up to 26.3 and 26.4-snapshot (Java 25).
+            - Bundles Java 8; Java 17, 21 and 25 install from Settings > Java or download
+              automatically when a version requires them.
+            - Own package com.blockys.movil, Blockys name, icons and accent color.
+            - APK signed with the project debug key; install with unknown sources enabled.
+              Uninstall any previous Blockys Mobile build first: each build uses a new debug
+              signature, so it cannot update an older one in place.
+
+            Based on [Amethyst-Android](https://github.com/AngelAuraMC/Amethyst-Android) (LGPL-3.0),
+            itself a fork of PojavLauncher. This fork is not affiliated with AngelAuraMC,
+            PojavLauncherTeam, Mojang or Microsoft. Modified source is published in this repository.
