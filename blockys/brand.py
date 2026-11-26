@@ -24,8 +24,8 @@ def patch(rel, pairs):
 
 patch("build.gradle", [
     ('applicationId "org.angelauramc.amethyst"', f'applicationId "{PKG}"'),
-    ("versionCode 10000000", "versionCode 20000007"),
-    ("versionName getVersionName()", 'versionName "2.0.7"'),
+    ("versionCode 10000000", "versionCode 20000008"),
+    ("versionName getVersionName()", 'versionName "2.0.8"'),
     ("            applicationIdSuffix '.debug'\n", ""),
     ('resValue "string", "app_name", "Amethyst (Debug)"',
      f'resValue "string", "app_name", "{NAME}"'),
@@ -139,12 +139,12 @@ patch("src/main/java/net/kdt/pojavlaunch/MainActivity.java", [
     (
         "            JMinecraftVersionList.Version mVersionInfo = Tools.getVersionInfo(version);\n",
         "            JMinecraftVersionList.Version mVersionInfo = Tools.getVersionInfo(version);\n"
-        "            // Minecraft 26.3+ needs the Vulkan-backed renderer; the OpenGL\n"
-        "            // fallback aborts on Android because SDL allows a single window.\n"
+        "            // Minecraft 26.3+ prefers the Vulkan-backed renderer, so a profile\n"
+        "            // without one gets Kopper Zink. If Zink cannot start on this device,\n"
+        "            // RendererFallback moves the profile to MobileGlues (see JREUtils).\n"
         "            if (mVersionInfo.javaVersion != null\n"
         "                    && mVersionInfo.javaVersion.majorVersion >= 25\n"
-        "                    && (Tools.LOCAL_RENDERER == null\n"
-        "                        || !Tools.LOCAL_RENDERER.toLowerCase().contains(\"zink\"))) {\n"
+        "                    && Tools.LOCAL_RENDERER == null) {\n"
         "                Log.i(\"RdrDebug\", \"Java 25+ version: switching renderer to Kopper Zink\");\n"
         "                Tools.LOCAL_RENDERER = \"opengles3_desktopgl_zink_kopper\";\n"
         "            }\n",
@@ -172,6 +172,111 @@ patch("src/main/java/net/kdt/pojavlaunch/fragments/ModpackCreateFragment.java", 
         "    }",
     ),
 ])
+
+patch("src/main/java/net/kdt/pojavlaunch/utils/JREUtils.java", [
+    (
+        "        final int exitCode = VMLauncher.launchJVM(userArgs.toArray(new String[0]));\n"
+        "        Logger.appendToLog(\"Java Exit code: \" + exitCode);\n"
+        "        if (exitCode != 0) {\n"
+        "            LifecycleAwareAlertDialog.DialogCreator dialogCreator = (dialog, builder)->\n"
+        "                    builder.setMessage(activity.getString(R.string.mcn_exit_title, exitCode))\n",
+        "        final int exitCode = VMLauncher.launchJVM(userArgs.toArray(new String[0]));\n"
+        "        Logger.appendToLog(\"Java Exit code: \" + exitCode);\n"
+        "        // If Zink cannot start here, move the profile to MobileGlues so the next\n"
+        "        // Play does not repeat the same crash.\n"
+        "        final boolean rendererSwitched = exitCode != 0\n"
+        "                && RendererFallback.switchToMobileGlues();\n"
+        "        if (exitCode != 0) {\n"
+        "            LifecycleAwareAlertDialog.DialogCreator dialogCreator = (dialog, builder)->\n"
+        "                    builder.setMessage(activity.getString(rendererSwitched\n"
+        "                                    ? R.string.mcn_exit_renderer_switch\n"
+        "                                    : R.string.mcn_exit_title, exitCode))\n",
+    ),
+])
+
+patch("src/main/res/values/strings.xml", [
+    (
+        '<string name="mcn_exit_title">Application/Game exited with code %d, check '
+        'latestlog.txt for more details.</string>\n',
+        '<string name="mcn_exit_title">Application/Game exited with code %d, check '
+        'latestlog.txt for more details.</string>\n'
+        '    <string name="mcn_exit_renderer_switch">The game exited with code %d. Zink '
+        'could not start on this device, so this profile now uses the MobileGlues '
+        'renderer. Press Play to try again.</string>\n',
+    ),
+])
+
+patch("src/main/res/values-es/strings.xml", [
+    (
+        '<string name="mcn_exit_title">La aplicación/juego ha finalizado con el código %d, '
+        'mira el archivo latestlog.txt para más detalles.</string>\n',
+        '<string name="mcn_exit_title">La aplicación/juego ha finalizado con el código %d, '
+        'mira el archivo latestlog.txt para más detalles.</string>\n'
+        '    <string name="mcn_exit_renderer_switch">El juego terminó con el código %d. '
+        'Zink no pudo iniciarse en este dispositivo, así que este perfil usa ahora el '
+        'renderer MobileGlues. Pulsa Jugar para intentarlo de nuevo.</string>\n',
+    ),
+])
+
+(APP / "src/main/java/net/kdt/pojavlaunch/utils/RendererFallback.java").write_text("""package net.kdt.pojavlaunch.utils;
+
+import android.util.Log;
+
+import net.kdt.pojavlaunch.Logger;
+import net.kdt.pojavlaunch.Tools;
+import net.kdt.pojavlaunch.value.launcherprofiles.LauncherProfiles;
+import net.kdt.pojavlaunch.value.launcherprofiles.MinecraftProfile;
+
+import java.io.File;
+import java.io.RandomAccessFile;
+
+/**
+ * Moves the current profile from Zink to MobileGlues after Zink failed to start.
+ */
+public final class RendererFallback {
+    private static final String MOBILEGLUES = "opengles_mobileglues";
+    private static final String LOG_FILE = "latestlog.txt";
+    private static final String EGL_FAILURE = "Could not initialize EGL";
+    private static final int TAIL_BYTES = 256 * 1024;
+
+    private RendererFallback() {}
+
+    /** @return whether the profile was switched to MobileGlues */
+    public static boolean switchToMobileGlues() {
+        String renderer = Tools.LOCAL_RENDERER;
+        if (renderer == null || !renderer.toLowerCase().contains("zink")) return false;
+        if (!logShowsEglFailure()) return false;
+        try {
+            MinecraftProfile profile = LauncherProfiles.getCurrentProfile();
+            profile.pojavRendererName = MOBILEGLUES;
+            LauncherProfiles.write();
+            Tools.LOCAL_RENDERER = MOBILEGLUES;
+            Logger.appendToLog("Renderer fallback: Zink could not initialize EGL, "
+                    + "this profile now uses MobileGlues");
+            return true;
+        } catch (Throwable throwable) {
+            Log.w("RendererFallback", "Could not switch the renderer", throwable);
+            return false;
+        }
+    }
+
+    private static boolean logShowsEglFailure() {
+        File logFile = new File(Tools.DIR_GAME_HOME, LOG_FILE);
+        if (!logFile.isFile()) return false;
+        try (RandomAccessFile file = new RandomAccessFile(logFile, "r")) {
+            long length = file.length();
+            int tailLength = (int) Math.min(length, TAIL_BYTES);
+            byte[] tail = new byte[tailLength];
+            file.seek(length - tailLength);
+            file.readFully(tail);
+            return new String(tail, "UTF-8").contains(EGL_FAILURE);
+        } catch (Throwable throwable) {
+            Log.w("RendererFallback", "Could not read the log tail", throwable);
+            return false;
+        }
+    }
+}
+""", encoding="utf-8")
 
 src = Image.open(ROOT / "blockys" / "icon.png").convert("RGBA")
 res = APP / "src/main/res"
